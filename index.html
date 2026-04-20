@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Verim Denizcilik — Lojistik Portalı</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0a1628;
+    --navy2: #111f38;
+    --blue: #1a4080;
+    --accent: #2c7be5;
+    --cyan: #00d4ff;
+    --white: #f0f4fc;
+    --muted: #7a8fa8;
+    --green: #00e5a0;
+    --orange: #ff8c42;
+    --red: #ff4d6d;
+    --border: rgba(44,123,229,0.18);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* BACKGROUND GRID */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(44,123,229,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(44,123,229,0.04) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* HEADER */
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 24px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(10,22,40,0.8);
+    backdrop-filter: blur(12px);
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .logo-main {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 3px;
+    color: var(--white);
+  }
+
+  .logo-sub {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .status-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: pulse 2s infinite;
+  }
+
+  .dot.connected { background: var(--green); }
+  .dot.error { background: var(--red); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* CONFIG PANEL */
+  #config-panel {
+    position: relative;
+    z-index: 10;
+    margin: 32px 40px;
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 28px 32px;
+  }
+
+  #config-panel h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    margin-bottom: 20px;
+  }
+
+  .config-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-group label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .field-group input {
+    background: rgba(26,64,128,0.2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 14px;
+    color: var(--white);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .field-group input:focus {
+    border-color: var(--accent);
+  }
+
+  .btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 12px 28px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+
+  .btn:hover { background: var(--cyan); color: var(--navy); }
+  .btn:disabled { background: var(--muted); cursor: not-allowed; }
+
+  .btn-secondary {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    margin-left: 10px;
+  }
+
+  .btn-secondary:hover { border-color: var(--accent); color: var(--white); background: transparent; }
+
+  /* MAIN */
+  main {
+    position: relative;
+    z-index: 10;
+    padding: 0 40px 40px;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+
+  .tab {
+    padding: 14px 28px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    user-select: none;
+  }
+
+  .tab:hover { color: var(--white); }
+  .tab.active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .stat-card {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 20px 24px;
+  }
+
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .stat-value {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 32px;
+    color: var(--white);
+    letter-spacing: 1px;
+  }
+
+  .stat-value.accent { color: var(--cyan); }
+
+  /* SEARCH */
+  .search-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    align-items: center;
+  }
+
+  .search-input {
+    flex: 1;
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px 16px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--accent); }
+  .search-input::placeholder { color: var(--muted); }
+
+  /* TABLE */
+  .table-wrap {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead tr {
+    background: rgba(26,64,128,0.3);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th {
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 400;
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(44,123,229,0.08);
+    transition: background 0.15s;
+    cursor: pointer;
+  }
+
+  tbody tr:hover { background: rgba(44,123,229,0.08); }
+  tbody tr:last-child { border-bottom: none; }
+
+  td {
+    padding: 13px 16px;
+    font-size: 13px;
+    color: var(--white);
+    vertical-align: middle;
+  }
+
+  .mono { font-family: 'DM Mono', monospace; font-size: 12px; }
+  .muted-text { color: var(--muted); }
+
+  /* BADGES */
+  .badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 500;
+  }
+
+  .badge-confirmed { background: rgba(0,229,160,0.12); color: var(--green); border: 1px solid rgba(0,229,160,0.25); }
+  .badge-draft { background: rgba(255,140,66,0.12); color: var(--orange); border: 1px solid rgba(255,140,66,0.25); }
+  .badge-gate-in { background: rgba(0,212,255,0.12); color: var(--cyan); border: 1px solid rgba(0,212,255,0.25); }
+  .badge-gate-out { background: rgba(122,143,168,0.12); color: var(--muted); border: 1px solid rgba(122,143,168,0.25); }
+  .badge-load { background: rgba(44,123,229,0.12); color: var(--accent); border: 1px solid rgba(44,123,229,0.25); }
+  .badge-discharge { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.25); }
+  .badge-damage { background: rgba(255,77,109,0.2); color: var(--red); border: 1px solid var(--red); }
+
+  /* LOADING / EMPTY */
+  .state-msg {
+    padding: 60px;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 1px;
+  }
+
+  .spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ERROR */
+  .error-msg {
+    background: rgba(255,77,109,0.08);
+    border: 1px solid rgba(255,77,109,0.25);
+    border-radius: 4px;
+    padding: 16px 20px;
+    color: var(--red);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    margin-bottom: 20px;
+  }
+
+  /* PAGINATION */
+  .pagination {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .page-btn {
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 6px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: all 0.2s;
+  }
+
+  .page-btn:hover { border-color: var(--accent); color: var(--white); }
+  .page-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* DETAIL PANEL */
+  .detail-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,22,40,0.85);
+    z-index: 100;
+    backdrop-filter: blur(4px);
+  }
+
+  .detail-panel {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 480px;
+    background: var(--navy2);
+    border-left: 1px solid var(--border);
+    padding: 32px;
+    overflow-y: auto;
+    animation: slideIn 0.25s ease;
+  }
+
+  @keyframes slideIn {
+    from { transform: translateX(40px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  .detail-close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+  }
+
+  .detail-close:hover { color: var(--white); }
+
+  .detail-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    margin-bottom: 24px;
+    padding-right: 40px;
+  }
+
+  .detail-section {
+    margin-bottom: 24px;
+  }
+
+  .detail-section-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .detail-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 7px 0;
+    font-size: 13px;
+  }
+
+  .detail-row .key {
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .detail-row .val {
+    color: var(--white);
+    text-align: right;
+    max-width: 260px;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-main">VERİM</span>
+    <span class="logo-sub">Lojistik Portalı</span>
+  </div>
+  <div class="status-indicator">
+    <div class="dot" id="conn-dot"></div>
+    <span id="conn-text">BAĞLANTI YOK</span>
+  </div>
+</header>
+
+<!-- CONFIG -->
+<div id="config-panel">
+  <h2>BC Bağlantı Ayarları</h2>
+  <div class="config-grid">
+    <div class="field-group">
+      <label>Tenant ID</label>
+      <input type="text" id="cfg-tenant" placeholder="31d35e5f-..." value="31d35e5f-2c33-4180-8e62-c41e483bd319">
+    </div>
+    <div class="field-group">
+      <label>Client ID</label>
+      <input type="text" id="cfg-client" placeholder="3edee1fa-..." value="3edee1fa-d5e8-4492-a5d5-bab9c704ef63">
+    </div>
+    <div class="field-group">
+      <label>Client Secret</label>
+      <input type="password" id="cfg-secret" placeholder="Gizli anahtar...">
+    </div>
+    <div class="field-group">
+      <label>Environment</label>
+      <input type="text" id="cfg-env" placeholder="VERIM-SANDBOX" value="VERIM-SANDBOX">
+    </div>
+    <div class="field-group">
+      <label>Company Name</label>
+      <input type="text" id="cfg-company" placeholder="Şirket adı (tam)">
+    </div>
+  </div>
+  <button class="btn" onclick="connect()">BAĞLAN</button>
+  <button class="btn btn-secondary" onclick="toggleConfig()">GİZLE</button>
+  <div id="cfg-error"></div>
+</div>
+
+<main id="main-content" style="display:none">
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('konsimento')">KONŞİMENTOLAR</div>
+    <div class="tab" onclick="switchTab('container')">KONTEYNER DURUMLARI</div>
+  </div>
+
+  <!-- KONSIMENTO TAB -->
+  <div id="tab-konsimento" class="tab-content active">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Toplam</div>
+        <div class="stat-value accent" id="stat-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Onaylı</div>
+        <div class="stat-value" id="stat-confirmed">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Taslak</div>
+        <div class="stat-value" id="stat-draft">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Müşteri</div>
+        <div class="stat-value" id="stat-customers">—</div>
+      </div>
+    </div>
+
+    <div class="search-row">
+      <input class="search-input" type="text" id="search-kons" placeholder="Konşimento no, müşteri, gemi, liman..." oninput="filterKons()">
+      <button class="btn btn-secondary" onclick="loadKonsimento()">YENİLE</button>
+    </div>
+
+    <div id="kons-error"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>No</th>
+            <th>Konşimento No</th>
+            <th>Sefer No</th>
+            <th>Gemi</th>
+            <th>Müşteri</th>
+            <th>Yükleme Limanı</th>
+            <th>Tahliye Limanı</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+          </tr>
+        </thead>
+        <tbody id="kons-tbody">
+          <tr><td colspan="9" class="state-msg">Bağlanın ve verileri yükleyin</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="kons-pagination"></div>
+  </div>
+
+  <!-- CONTAINER TAB -->
+  <div id="tab-container" class="tab-content">
+    <div class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Toplam Kayıt</div>
+        <div class="stat-value accent" id="stat-cont-total">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Benzersiz Konteyner</div>
+        <div class="stat-value" id="stat-cont-unique">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Hasar</div>
+        <div class="stat-value" id="stat-cont-damage" style="color:var(--red)">—</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Son Güncelleme</div>
+        <div class="stat-value" id="stat-cont-last" style="font-size:14px;padding-top:8px">—</div>
+      </div>
+    </div>
+
+    <div class="search-row">
+      <input class="search-input" type="text" id="search-cont" placeholder="Konteyner no, konşimento, gemi, konum..." oninput="filterCont()">
+      <button class="btn btn-secondary" onclick="loadContainers()">YENİLE</button>
+    </div>
+
+    <div id="cont-error"></div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Konteyner No</th>
+            <th>Durum</th>
+            <th>Tarih</th>
+            <th>Dolu/Boş</th>
+            <th>Gemi</th>
+            <th>Konşimento</th>
+            <th>Liman</th>
+            <th>Konum</th>
+            <th>Hasar</th>
+          </tr>
+        </thead>
+        <tbody id="cont-tbody">
+          <tr><td colspan="9" class="state-msg">Bağlanın ve verileri yükleyin</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="pagination" id="cont-pagination"></div>
+  </div>
+</main>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-panel" id="detail-panel">
+    <button class="detail-close" onclick="closeDetailPanel()">✕</button>
+    <div id="detail-content"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──────────────────────────────────────────────────────
+let token = null;
+let baseUrl = '';
+let allKons = [];
+let allCont = [];
+let filteredKons = [];
+let filteredCont = [];
+const PAGE_SIZE = 20;
+let konsPage = 1;
+let contPage = 1;
+
+// ── AUTH ───────────────────────────────────────────────────────
+async function connect() {
+  const tenant   = document.getElementById('cfg-tenant').value.trim();
+  const clientId = document.getElementById('cfg-client').value.trim();
+  const secret   = document.getElementById('cfg-secret').value.trim();
+  const env      = document.getElementById('cfg-env').value.trim();
+  const company  = document.getElementById('cfg-company').value.trim();
+
+  if (!tenant || !clientId || !secret || !env) {
+    showCfgError('Lütfen tüm alanları doldurun.');
+    return;
+  }
+
+  setConnStatus('loading', 'BAĞLANIYOR...');
+  showCfgError('');
+
+  try {
+    const resp = await fetch(
+      `https://login.microsoftonline.com/${tenant}/oauth2/v2.0/token`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'client_credentials',
+          client_id: clientId,
+          client_secret: secret,
+          scope: 'https://api.businesscentral.dynamics.com/.default'
+        })
+      }
+    );
+
+    if (!resp.ok) throw new Error(`Token alınamadı: ${resp.status}`);
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error_description || data.error);
+
+    token = data.access_token;
+
+    // Build base URL
+    const companyParam = company
+      ? `?company=${encodeURIComponent(company)}`
+      : '';
+    baseUrl = `https://api.businesscentral.dynamics.com/v2.0/${tenant}/${env}/api/verim/logistics/v1.0`;
+
+    setConnStatus('connected', 'BAĞLI');
+    document.getElementById('config-panel').style.display = 'none';
+    document.getElementById('main-content').style.display = 'block';
+
+    await Promise.all([loadKonsimento(), loadContainers()]);
+  } catch (err) {
+    setConnStatus('error', 'HATA');
+    showCfgError('Bağlantı hatası: ' + err.message);
+  }
+}
+
+function setConnStatus(state, text) {
+  const dot  = document.getElementById('conn-dot');
+  const span = document.getElementById('conn-text');
+  dot.className = 'dot' + (state === 'connected' ? ' connected' : state === 'error' ? ' error' : '');
+  span.textContent = text;
+}
+
+function showCfgError(msg) {
+  const el = document.getElementById('cfg-error');
+  el.innerHTML = msg ? `<div class="error-msg" style="margin-top:16px">${msg}</div>` : '';
+}
+
+function toggleConfig() {
+  const p = document.getElementById('config-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── API CALLS ──────────────────────────────────────────────────
+async function apiFetch(endpoint) {
+  const resp = await fetch(baseUrl + endpoint, {
+    headers: { Authorization: 'Bearer ' + token, Accept: 'application/json' }
+  });
+  if (!resp.ok) throw new Error(`API hatası ${resp.status}: ${resp.statusText}`);
+  return resp.json();
+}
+
+async function loadKonsimento() {
+  setTbodyLoading('kons-tbody', 9);
+  document.getElementById('kons-error').innerHTML = '';
+  try {
+    const data = await apiFetch('/konsimentolar?$top=500&$orderby=creationDate desc');
+    allKons = data.value || [];
+    updateKonsStats();
+    filteredKons = [...allKons];
+    konsPage = 1;
+    renderKons();
+  } catch (err) {
+    document.getElementById('kons-error').innerHTML =
+      `<div class="error-msg">Konşimento verileri yüklenemedi: ${err.message}</div>`;
+    document.getElementById('kons-tbody').innerHTML =
+      `<tr><td colspan="9" class="state-msg">Veri yüklenemedi</td></tr>`;
+  }
+}
+
+async function loadContainers() {
+  setTbodyLoading('cont-tbody', 9);
+  document.getElementById('cont-error').innerHTML = '';
+  try {
+    const data = await apiFetch('/containerStatuses?$top=500&$orderby=statusDate desc');
+    allCont = data.value || [];
+    updateContStats();
+    filteredCont = [...allCont];
+    contPage = 1;
+    renderCont();
+  } catch (err) {
+    document.getElementById('cont-error').innerHTML =
+      `<div class="error-msg">Konteyner verileri yüklenemedi: ${err.message}</div>`;
+    document.getElementById('cont-tbody').innerHTML =
+      `<tr><td colspan="9" class="state-msg">Veri yüklenemedi</td></tr>`;
+  }
+}
+
+// ── STATS ──────────────────────────────────────────────────────
+function updateKonsStats() {
+  const confirmed = allKons.filter(k => k.status === 1 || k.status === 'Confirmed').length;
+  const draft     = allKons.filter(k => k.status === 0 || k.status === 'Draft').length;
+  const customers = new Set(allKons.map(k => k.customerNo).filter(Boolean)).size;
+  document.getElementById('stat-total').textContent     = allKons.length;
+  document.getElementById('stat-confirmed').textContent = confirmed;
+  document.getElementById('stat-draft').textContent     = draft;
+  document.getElementById('stat-customers').textContent = customers;
+}
+
+function updateContStats() {
+  const unique = new Set(allCont.map(c => c.containerNo)).size;
+  const damage = allCont.filter(c => c.isDamage).length;
+  const last   = allCont.length ? fmtDT(allCont[0].statusDate) : '—';
+  document.getElementById('stat-cont-total').textContent  = allCont.length;
+  document.getElementById('stat-cont-unique').textContent = unique;
+  document.getElementById('stat-cont-damage').textContent = damage;
+  document.getElementById('stat-cont-last').textContent   = last;
+}
+
+// ── FILTER ─────────────────────────────────────────────────────
+function filterKons() {
+  const q = document.getElementById('search-kons').value.toLowerCase();
+  filteredKons = allKons.filter(k =>
+    [k.no, k.konsimentoNo, k.seferNo, k.vesselName, k.customerName,
+     k.portOfLoading, k.portOfDischarge].some(v => v && v.toLowerCase().includes(q))
+  );
+  konsPage = 1;
+  renderKons();
+}
+
+function filterCont() {
+  const q = document.getElementById('search-cont').value.toLowerCase();
+  filteredCont = allCont.filter(c =>
+    [c.containerNo, c.billOfLadingNo, c.vesselName, c.yardLocation,
+     c.portOfActivity, c.lineOperator].some(v => v && v.toLowerCase().includes(q))
+  );
+  contPage = 1;
+  renderCont();
+}
+
+// ── RENDER KONSIMENTO ──────────────────────────────────────────
+function renderKons() {
+  const tbody = document.getElementById('kons-tbody');
+  const start = (konsPage - 1) * PAGE_SIZE;
+  const page  = filteredKons.slice(start, start + PAGE_SIZE);
+
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="state-msg">Kayıt bulunamadı</td></tr>`;
+    document.getElementById('kons-pagination').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = page.map(k => `
+    <tr onclick="showKonsDetail(${JSON.stringify(k).replace(/"/g,'&quot;')})">
+      <td class="mono">${k.no || ''}</td>
+      <td class="mono" style="color:var(--cyan)">${k.konsimentoNo || ''}</td>
+      <td class="mono muted-text">${k.seferNo || ''}</td>
+      <td>${k.vesselName || '<span class="muted-text">—</span>'}</td>
+      <td>${k.customerName || '<span class="muted-text">—</span>'}</td>
+      <td class="muted-text">${k.portOfLoading || '—'}</td>
+      <td class="muted-text">${k.portOfDischarge || '—'}</td>
+      <td>${statusBadge(k.status)}</td>
+      <td class="muted-text mono" style="font-size:11px">${fmtDate(k.creationDate)}</td>
+    </tr>
+  `).join('');
+
+  renderPagination('kons-pagination', filteredKons.length, konsPage, (p) => { konsPage = p; renderKons(); });
+}
+
+function statusBadge(s) {
+  if (s === 1 || s === 'Confirmed') return '<span class="badge badge-confirmed">Onaylı</span>';
+  return '<span class="badge badge-draft">Taslak</span>';
+}
+
+// ── RENDER CONTAINERS ──────────────────────────────────────────
+function renderCont() {
+  const tbody = document.getElementById('cont-tbody');
+  const start = (contPage - 1) * PAGE_SIZE;
+  const page  = filteredCont.slice(start, start + PAGE_SIZE);
+
+  if (!page.length) {
+    tbody.innerHTML = `<tr><td colspan="9" class="state-msg">Kayıt bulunamadı</td></tr>`;
+    document.getElementById('cont-pagination').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = page.map(c => `
+    <tr onclick="showContDetail(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+      <td class="mono" style="color:var(--cyan)">${c.containerNo || ''}</td>
+      <td>${contStatusBadge(c.statusCode)}</td>
+      <td class="mono muted-text" style="font-size:11px">${fmtDT(c.statusDate)}</td>
+      <td>${fullEmptyBadge(c.fullEmpty)}</td>
+      <td class="muted-text">${c.vesselName || '—'}</td>
+      <td class="mono muted-text" style="font-size:11px">${c.billOfLadingNo || '—'}</td>
+      <td class="muted-text">${c.portOfActivity || '—'}</td>
+      <td class="muted-text">${c.yardLocation || '—'}</td>
+      <td>${c.isDamage ? '<span class="badge badge-damage">HASAR</span>' : '<span class="muted-text">—</span>'}</td>
+    </tr>
+  `).join('');
+
+  renderPagination('cont-pagination', filteredCont.length, contPage, (p) => { contPage = p; renderCont(); });
+}
+
+function contStatusBadge(s) {
+  const map = {
+    1: ['badge-gate-in',  'GATE IN FULL'],
+    2: ['badge-gate-in',  'GATE IN MTY'],
+    3: ['badge-gate-out', 'GATE OUT FULL'],
+    4: ['badge-gate-out', 'GATE OUT MTY'],
+    7: ['badge-load',     'LOAD'],
+    8: ['badge-discharge','DISCHARGE'],
+  };
+  const [cls, label] = map[s] || ['badge-draft', s || '—'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+
+function fullEmptyBadge(s) {
+  if (s === 1 || s === 'Full')  return '<span class="badge badge-load">DOLU</span>';
+  if (s === 2 || s === 'Empty') return '<span class="badge badge-gate-out">BOŞ</span>';
+  return '<span class="muted-text">—</span>';
+}
+
+// ── PAGINATION ─────────────────────────────────────────────────
+function renderPagination(id, total, current, onPage) {
+  const pages = Math.ceil(total / PAGE_SIZE);
+  const el = document.getElementById(id);
+  if (pages <= 1) { el.innerHTML = ''; return; }
+
+  let html = `<button class="page-btn" ${current===1?'disabled':''} onclick="(${onPage.toString()})(${current-1})">◀</button>`;
+  for (let i = 1; i <= pages; i++) {
+    if (i === 1 || i === pages || Math.abs(i - current) <= 2)
+      html += `<button class="page-btn ${i===current?'active':''}" onclick="(${onPage.toString()})(${i})">${i}</button>`;
+    else if (Math.abs(i - current) === 3)
+      html += `<span class="muted-text" style="padding:0 4px">…</span>`;
+  }
+  html += `<button class="page-btn" ${current===pages?'disabled':''} onclick="(${onPage.toString()})(${current+1})">▶</button>`;
+  el.innerHTML = html;
+}
+
+// ── DETAIL PANELS ──────────────────────────────────────────────
+function showKonsDetail(k) {
+  const html = `
+    <div class="detail-title">${k.konsimentoNo || k.no}</div>
+    <div class="detail-section">
+      <div class="detail-section-title">Genel</div>
+      ${row('Dahili No', k.no)}
+      ${row('Konşimento No', k.konsimentoNo)}
+      ${row('Sefer No', k.seferNo)}
+      ${row('Gemi', k.vesselName)}
+      ${row('Durum', k.status === 1 || k.status === 'Confirmed' ? '✅ Onaylı' : '⏳ Taslak')}
+      ${row('Oluşturma Tarihi', fmtDate(k.creationDate))}
+      ${row('Belge Tarihi', fmtDate(k.documentDate))}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Müşteri & Taraflar</div>
+      ${row('Müşteri', k.customerName)}
+      ${row('Müşteri No', k.customerNo)}
+      ${row('Yükleyen', k.shipper)}
+      ${row('Alıcı', k.consignee)}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Liman & Taşıma</div>
+      ${row('Yükleme Limanı', k.portOfLoading)}
+      ${row('Tahliye Limanı', k.portOfDischarge)}
+      ${row('Gemiye Yüklendi', k.shippedOnBoard)}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Yük</div>
+      ${row('Parça Sayısı', k.totalPieces)}
+      ${row('Brüt Ağırlık', k.totalGrossWeight ? k.totalGrossWeight + ' kg' : '')}
+      ${row('Konteyner Özeti', k.containerSummary)}
+      ${row('Mal Tanımı', k.descriptionOfGoods)}
+    </div>
+  `;
+  openDetail(html);
+}
+
+function showContDetail(c) {
+  const html = `
+    <div class="detail-title">${c.containerNo}</div>
+    <div class="detail-section">
+      <div class="detail-section-title">Durum</div>
+      ${row('Hareket', contStatusBadge(c.statusCode))}
+      ${row('Tarih', fmtDT(c.statusDate))}
+      ${row('Dolu / Boş', fullEmptyBadge(c.fullEmpty))}
+      ${row('Rejim', c.regime)}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Gemi & Sefer</div>
+      ${row('Gemi', c.vesselName)}
+      ${row('Sefer No', c.voyageNo)}
+      ${row('Hat', c.lineOperator)}
+      ${row('Konşimento', c.billOfLadingNo)}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Konum</div>
+      ${row('Liman', c.portOfActivity)}
+      ${row('Saha', c.yardLocation)}
+      ${row('Kamyon', c.truckNo)}
+    </div>
+    <div class="detail-section">
+      <div class="detail-section-title">Konteyner</div>
+      ${row('ISO Kodu', c.isoCode)}
+      ${row('Boy', c.size)}
+      ${row('Brüt Ağırlık', c.grossWeight ? c.grossWeight + ' kg' : '')}
+      ${row('Mühür No', c.sealNo)}
+    </div>
+    ${c.isDamage ? `
+    <div class="detail-section">
+      <div class="detail-section-title" style="color:var(--red)">⚠ HASAR</div>
+      ${row('Hasar Bilgisi', c.damageInfo)}
+      ${row('Hasar Alanı', c.damageArea)}
+    </div>` : ''}
+  `;
+  openDetail(html);
+}
+
+function row(label, val) {
+  if (!val && val !== 0) return '';
+  return `<div class="detail-row"><span class="key">${label}</span><span class="val">${val}</span></div>`;
+}
+
+function openDetail(html) {
+  document.getElementById('detail-content').innerHTML = html;
+  document.getElementById('detail-overlay').style.display = 'block';
+}
+
+function closeDetail(e) {
+  if (e.target === document.getElementById('detail-overlay')) closeDetailPanel();
+}
+
+function closeDetailPanel() {
+  document.getElementById('detail-overlay').style.display = 'none';
+}
+
+// ── TABS ───────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i === (name==='konsimento'?0:1)));
+  document.getElementById('tab-konsimento').classList.toggle('active', name==='konsimento');
+  document.getElementById('tab-container').classList.toggle('active', name==='container');
+}
+
+// ── UTILS ──────────────────────────────────────────────────────
+function fmtDate(d) {
+  if (!d) return '—';
+  return new Date(d).toLocaleDateString('tr-TR');
+}
+
+function fmtDT(d) {
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('tr-TR') + ' ' + dt.toLocaleTimeString('tr-TR', {hour:'2-digit',minute:'2-digit'});
+}
+
+function setTbodyLoading(id, cols) {
+  document.getElementById(id).innerHTML =
+    `<tr><td colspan="${cols}" class="state-msg"><span class="spinner"></span>YÜKLENİYOR...</td></tr>`;
+}
+</script>
+</body>
+</html>
